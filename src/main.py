@@ -29,7 +29,6 @@ class Player(pygame.sprite.Sprite):
         self.count = random.randint(0, 2)
         self.update_count = 0
         self.power = 0
-        self.dt = 10 / 1000
 
     def update(self):
         if self.power > 0:
@@ -42,6 +41,9 @@ class Player(pygame.sprite.Sprite):
 
     def update_power(self, power):
         self.power = power
+
+    def get_position(self):
+        return self.rect.x
 
 
 class PowerGauge():
@@ -72,14 +74,41 @@ class PowerGauge():
         surface.blit(self.image, (self.x - 40, self.y - 10))
 
 
+class LevelProgress():
+    def __init__(self, screen_size):
+        self.x = 5
+        self.y = screen_size[1] - 25
+        self.w = screen_size[0] - 10
+        self.h = 20
+        self.progress = 0.5
+
+    def draw(self, surface):
+        rect = pygame.Surface((self.w, self.h), pygame.SRCALPHA)
+        rect.fill((255, 255, 255, 128))
+        surface.blit(rect, (self.x, self.y))
+        rect_progress = pygame.Surface(
+            (self.w * self.progress, self.h), pygame.SRCALPHA)
+        rect_progress.fill((0, 0, 0, 128))
+        surface.blit(rect_progress, (self.x, self.y))
+
+    def update(self, progress):
+        self.progress = progress
+
+
 pygame.init()
 screen_size = (1024, 576)
 display = pygame.display.set_mode(screen_size)
 clock = pygame.time.Clock()
 
-background = pygame.image.load("./assets/demo/background.webp")
+backgrounds = []
+for i in range(4):
+    backgrounds.append(
+        pygame.image.load(
+            "./assets/demo/background_{}.webp".format(i)))
 
 power = PowerGauge()
+level_progress = LevelProgress(screen_size)
+
 hero = Player(0, screen_size[1] - 150, t="hero")
 player_group = pygame.sprite.Group()
 player_group.add(hero)
@@ -90,18 +119,24 @@ for i in range(10):
     peloton.add(conc)
 
 running = True
+index = 0
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-    display.blit(pygame.transform.scale(background, screen_size), (0, 0))
+    display.blit(pygame.transform.scale(
+        backgrounds[index % 4], screen_size), (0, 0))
 
     inst_power = get_power()
 
     power.hp = inst_power
     power.draw(display)
     hero.power = inst_power
+
+    level_progress.draw(display)
+    hero_position = hero.get_position()
+    level_progress.update(hero_position / screen_size[0] * 0.25 + 0.25 * index)
 
     player_group.draw(display)
     player_group.update()
@@ -113,6 +148,12 @@ while running:
         else:
             i.update_power(inst_power)
     peloton.update()
+
+    if hero_position > screen_size[0]:
+        hero.rect.x = 0
+        for i in peloton:
+            i.rect.x = -random.randint(100, 300)
+        index += 1
 
     pygame.display.update()
     clock.tick(10)
