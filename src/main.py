@@ -1,6 +1,7 @@
 import pygame
 import random
 import time
+import pygame_menu
 
 TIME = time.time()
 PREV = 0
@@ -94,11 +95,13 @@ class LevelProgress():
     def update(self, progress):
         self.progress = progress
 
-
 pygame.init()
+
 screen_size = (1024, 576)
 display = pygame.display.set_mode(screen_size)
 clock = pygame.time.Clock()
+
+menu = pygame_menu.Menu('Connection', 400, 300, theme=pygame_menu.themes.THEME_BLUE, onclose=pygame_menu.events.CLOSE)
 
 backgrounds = []
 for i in range(4):
@@ -121,9 +124,13 @@ for i in range(10):
 running = True
 index = 0
 while running:
-    for event in pygame.event.get():
+    events =  pygame.event.get()
+    for event in events:
         if event.type == pygame.QUIT:
             running = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                menu.enable()
 
     display.blit(pygame.transform.scale(
         backgrounds[index % 4], screen_size), (0, 0))
@@ -154,6 +161,10 @@ while running:
         for i in peloton:
             i.rect.x = -random.randint(100, 300)
         index += 1
+
+    if menu.is_enabled():
+        menu.draw(display) # Need to be before update
+        menu.update(events)
 
     pygame.display.update()
     clock.tick(10)
