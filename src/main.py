@@ -2,6 +2,9 @@ import pygame
 import random
 import time
 import pygame_menu
+import discover
+import power_service
+import asyncio
 
 TIME = time.time()
 PREV = 0
@@ -95,13 +98,27 @@ class LevelProgress():
     def update(self, progress):
         self.progress = progress
 
+
+def connect_power(index, element):
+    power_service.main(element.address)
+
+
 pygame.init()
 
 screen_size = (1024, 576)
 display = pygame.display.set_mode(screen_size)
 clock = pygame.time.Clock()
 
-menu = pygame_menu.Menu('Connection', 400, 300, theme=pygame_menu.themes.THEME_BLUE, onclose=pygame_menu.events.CLOSE)
+menu = pygame_menu.Menu(
+    "Connection",
+    400,
+    300,
+    theme=pygame_menu.themes.THEME_BLUE,
+    onclose=pygame_menu.events.CLOSE)
+devices = discover.get_devices()
+menu.add.dropselect("HT", items=[(i.name, i)
+                    for i in devices], onchange=connect_power)
+####
 
 backgrounds = []
 for i in range(4):
@@ -124,7 +141,7 @@ for i in range(10):
 running = True
 index = 0
 while running:
-    events =  pygame.event.get()
+    events = pygame.event.get()
     for event in events:
         if event.type == pygame.QUIT:
             running = False
@@ -135,7 +152,7 @@ while running:
     display.blit(pygame.transform.scale(
         backgrounds[index % 4], screen_size), (0, 0))
 
-    inst_power = get_power()
+    inst_power = power_service.get_power()
 
     power.hp = inst_power
     power.draw(display)
@@ -163,7 +180,7 @@ while running:
         index += 1
 
     if menu.is_enabled():
-        menu.draw(display) # Need to be before update
+        menu.draw(display)  # Need to be before update
         menu.update(events)
 
     pygame.display.update()
