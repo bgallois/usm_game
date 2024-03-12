@@ -7,4 +7,7 @@ async def main():
 
 
 def get_devices():
-    return asyncio.run(main())
+    try:
+        return asyncio.run(main())
+    except Exception as e:
+        print([(e,)])

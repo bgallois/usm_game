@@ -1,23 +1,9 @@
 import pygame
 import random
-import time
 import pygame_menu
 import discover
 import power_service
 import asyncio
-
-TIME = time.time()
-PREV = 0
-
-
-def get_power():
-    # Random power generator for dev
-    global TIME
-    global PREV
-    if time.time() - TIME > 1.5:
-        TIME = time.time()
-        PREV = random.gauss(300, 100)
-    return max(0, PREV)
 
 
 class Player(pygame.sprite.Sprite):
@@ -122,7 +108,13 @@ class LevelProgress():
 
 
 def connect_power(index, element):
-    power_service.main(element.address)
+    power_service.stop()
+    if index[0][0] == "Bot":
+        power_service.main()
+    elif index[0][0] == "None":
+        pass
+    else:
+        power_service.main(element.address)
 
 
 pygame.init()
@@ -138,8 +130,10 @@ menu = pygame_menu.Menu(
     theme=pygame_menu.themes.THEME_BLUE,
     onclose=pygame_menu.events.CLOSE)
 devices = discover.get_devices()
-menu.add.dropselect("HT", items=[(i.name, i)
-                    for i in devices], onchange=connect_power)
+items = [("Bot", "-1"), ("None", "-1")]
+if devices:
+    items.extend([(i.name, i) for i in devices])
+menu.add.dropselect("HT", items=items, onchange=connect_power)
 
 backgrounds = []
 for i in range(4):
