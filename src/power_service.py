@@ -1,4 +1,4 @@
-# Disclaimer:
+# ATROCE CODING Disclaimer:
 # This code is for educational/experimental purposes only.
 # It's a quick and dirty implementation for accessing Bluetooth devices
 # and retrieving power data. Can be used with a bot if no device is available.
@@ -10,6 +10,7 @@ import threading
 from pycycling.cycling_power_service import CyclingPowerService
 import time
 import random
+import sys
 
 
 power = -1
@@ -20,9 +21,11 @@ def get_power():
     global power
     return power
 
+
 def stop():
     global stop_flag
     stop_flag = True
+
 
 def start_background_loop(address):
     loop = asyncio.new_event_loop()
@@ -37,7 +40,7 @@ async def run(address):
             power = data.instantaneous_power
             if stop_flag:
                 power = 0
-                client.disconnect()
+                sys.exit()
 
         await client.is_connected()
         trainer = CyclingPowerService(client)
@@ -62,6 +65,8 @@ def main(address=None):
 
 TIME = time.time()
 PREV = 0
+
+
 class Bot():
 
     def cycle(self):
@@ -78,4 +83,3 @@ class Bot():
             if stop_flag:
                 power = 0
                 break
-

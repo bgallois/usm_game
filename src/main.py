@@ -4,6 +4,7 @@ import pygame_menu
 import discover
 import power_service
 import asyncio
+import time
 
 
 class Player(pygame.sprite.Sprite):
@@ -109,6 +110,7 @@ class LevelProgress():
 
 def connect_power(index, element):
     power_service.stop()
+    time.sleep(2)  # Let time to thread to close
     if index[0][0] == "Bot":
         power_service.main()
     elif index[0][0] == "None":
