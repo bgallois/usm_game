@@ -5,14 +5,17 @@ from pycycling.cycling_power_service import CyclingPowerService
 
 power = -1
 
+
 def get_power():
     global power
     return power
+
 
 def start_background_loop(address):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     loop.run_until_complete(run(address))
+
 
 async def run(address):
     async with BleakClient(address) as client:
@@ -27,6 +30,9 @@ async def run(address):
         await asyncio.sleep(300)
         await trainer.disable_cycling_power_measurement_notifications()
 
+
 def main(address):
-    t = threading.Thread(target=start_background_loop, args=(address,), daemon=True)
+    t = threading.Thread(
+        target=start_background_loop, args=(
+            address,), daemon=True)
     t.start()
