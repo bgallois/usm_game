@@ -11,9 +11,12 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, screen_size, t="peloton"):
         super().__init__()
         self.cycle = []
-        for i in range(2):
-            self.cycle.append(pygame.transform.scale(
-                pygame.image.load("./assets/demo/{}_{}.webp".format(t, i)), (screen_size[0] // 6, screen_size[0] // 6)))
+        for i in range(4):
+            try:
+                self.cycle.append(pygame.transform.scale(
+                    pygame.image.load("./assets/demo/{}_{}.webp".format(t, i)), (screen_size[0] // 6, screen_size[0] // 6)))
+            except:
+                pass
         self.image = self.cycle[0]
         self.rect = self.image.get_rect()
         self.rect.x = x
@@ -30,7 +33,7 @@ class Player(pygame.sprite.Sprite):
             self.update_count += 1
             if self.update_count % speed_ratio == 0:
                 self.count += 1
-            self.image = self.cycle[self.count % 2]
+            self.image = self.cycle[self.count % len(self.cycle)]
 
     def update_power(self, power):
         self.power = power
@@ -40,9 +43,12 @@ class Player(pygame.sprite.Sprite):
 
     def resize(self, screen_size):
         self.cycle = []
-        for i in range(2):
-            self.cycle.append(pygame.transform.scale(
-                pygame.image.load("./assets/demo/{}_{}.webp".format(self.t, i)), (screen_size[0] // 6, screen_size[0] // 6)))
+        for i in range(4):
+            try:
+                self.cycle.append(pygame.transform.scale(
+                    pygame.image.load("./assets/demo/{}_{}.webp".format(self.t, i)), (screen_size[0] // 6, screen_size[0] // 6)))
+            except:
+                pass
         self.image = self.cycle[0]
 
 
@@ -118,6 +124,15 @@ def connect_power(index, element):
     else:
         power_service.main(element.address)
 
+def load_level(index=0, path="./assets/demo/"):
+    try:
+        display.blit(pygame.transform.scale(
+            pygame.image.load(
+                "{}/background_{}.webp".format(path, index)), screen_size), (0, 0))
+        return (index, [])
+    except:
+        return (0, [])
+
 
 pygame.init()
 
@@ -137,11 +152,7 @@ if devices:
     items.extend([(i.name, i) for i in devices])
 menu.add.dropselect("HT", items=items, onchange=connect_power)
 
-backgrounds = []
-for i in range(4):
-    backgrounds.append(
-        pygame.image.load(
-            "./assets/demo/background_{}.webp".format(i)))
+load_level()
 
 power = PowerGauge(screen_size)
 level_progress = LevelProgress(screen_size)
@@ -159,6 +170,7 @@ for i in range(10):
 running = True
 index = 0
 while running:
+    # Event handling
     events = pygame.event.get()
     for event in events:
         if event.type == pygame.QUIT:
@@ -173,7 +185,6 @@ while running:
             for i in player_group:
                 i.rect.x = i.rect.x / screen_size[0] * event.dict['size'][0]
                 i.rect.y = i.rect.y / screen_size[1] * event.dict['size'][1]
-
             screen_size = event.dict['size']
             level_progress.resize(screen_size)
             power.resize(screen_size)
@@ -181,8 +192,7 @@ while running:
                 i.resize(screen_size)
             hero.resize(screen_size)
 
-    display.blit(pygame.transform.scale(
-        backgrounds[index % 4], screen_size), (0, 0))
+    (index, rewards) = load_level(index)
 
     inst_power = power_service.get_power()
 
@@ -197,6 +207,7 @@ while running:
     player_group.draw(display)
     player_group.update()
 
+    # Characters update
     peloton.draw(display)
     for i in peloton:
         if inst_power > 0:
@@ -211,6 +222,7 @@ while running:
             i.rect.x = -random.randint(100, 300)
         index += 1
 
+    # Menu
     if menu.is_enabled():
         menu.draw(display)  # Need to be before update
         menu.update(events)
