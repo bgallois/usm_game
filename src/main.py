@@ -133,7 +133,7 @@ def load_level(index=0, path="./assets/demo/"):
         display.blit(pygame.transform.scale(
             pygame.image.load(
                 "{}/reward.png".format(path)), (screen_size[0] // 10, screen_size[0] // 10 * 1.5)), (screen_size[0] - screen_size[0] // 10 * 1.1, 50))
-        return (index, [])
+        return (index, ["{}/reward.png".format(path)])
     except Exception as e:
         return (0, [])
 
@@ -229,6 +229,11 @@ while running:
         for i in peloton:
             i.rect.x = -random.randint(100, 300)
         index += 1
+
+    if index == 0 and hero_position / screen_size[0] < 0.15:
+        display.blit(pygame.transform.scale(
+            pygame.image.load(
+                rewards[0]), (screen_size[0] // 3, screen_size[0] // 3 * 1.5)), (screen_size[0]//4, 50))
 
     # Menu
     if menu.is_enabled():
