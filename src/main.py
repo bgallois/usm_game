@@ -29,7 +29,7 @@ class Player(pygame.sprite.Sprite):
     def update(self):
         if self.power > 0:
             self.rect.x += int(self.power) / 100
-            speed_ratio = 1000 // self.power + 1
+            speed_ratio = 200 // self.power + 1
             self.update_count += 1
             if self.update_count % speed_ratio == 0:
                 self.count += 1
@@ -135,7 +135,6 @@ def load_level(index=0, path="./assets/demo/"):
                 "{}/reward.png".format(path)), (screen_size[0] // 10, screen_size[0] // 10 * 1.5)), (screen_size[0] - screen_size[0] // 10 * 1.1, 50))
         return (index, [])
     except Exception as e:
-        print(e)
         return (0, [])
 
 
@@ -167,9 +166,9 @@ player_group = pygame.sprite.Group()
 player_group.add(hero)
 
 peloton = pygame.sprite.Group()
-for i in range(10):
+for i in reversed(range(10)):
     conc = Player(-random.randint(100, 300),
-                  screen_size[1] - 160 + i, screen_size)
+                  screen_size[1] - 160 - 1.2*i, screen_size)
     peloton.add(conc)
 
 running = True
