@@ -15,7 +15,7 @@ class Player(pygame.sprite.Sprite):
             try:
                 self.cycle.append(pygame.transform.scale(
                     pygame.image.load("./assets/demo/{}_{}.webp".format(t, i)), (screen_size[0] // 6, screen_size[0] // 6)))
-            except:
+            except BaseException:
                 pass
         self.image = self.cycle[0]
         self.rect = self.image.get_rect()
@@ -47,7 +47,7 @@ class Player(pygame.sprite.Sprite):
             try:
                 self.cycle.append(pygame.transform.scale(
                     pygame.image.load("./assets/demo/{}_{}.webp".format(self.t, i)), (screen_size[0] // 6, screen_size[0] // 6)))
-            except:
+            except BaseException:
                 pass
         self.image = self.cycle[0]
 
@@ -124,13 +124,18 @@ def connect_power(index, element):
     else:
         power_service.main(element.address)
 
+
 def load_level(index=0, path="./assets/demo/"):
     try:
         display.blit(pygame.transform.scale(
             pygame.image.load(
                 "{}/background_{}.webp".format(path, index)), screen_size), (0, 0))
+        display.blit(pygame.transform.scale(
+            pygame.image.load(
+                "{}/reward.png".format(path)), (screen_size[0] // 10, screen_size[0] // 10 * 1.5)), (screen_size[0] - screen_size[0] // 10 * 1.1, 50))
         return (index, [])
     except Exception as e:
+        print(e)
         return (0, [])
 
 
