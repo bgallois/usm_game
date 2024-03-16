@@ -130,7 +130,7 @@ def load_level(index=0, path="./assets/demo/"):
             pygame.image.load(
                 "{}/background_{}.webp".format(path, index)), screen_size), (0, 0))
         return (index, [])
-    except:
+    except Exception as e:
         return (0, [])
 
 
@@ -164,11 +164,12 @@ player_group.add(hero)
 peloton = pygame.sprite.Group()
 for i in range(10):
     conc = Player(-random.randint(100, 300),
-                  screen_size[1] - 160 - i, screen_size)
+                  screen_size[1] - 160 + i, screen_size)
     peloton.add(conc)
 
 running = True
 index = 0
+level_index = 0
 while running:
     # Event handling
     events = pygame.event.get()
@@ -192,7 +193,10 @@ while running:
                 i.resize(screen_size)
             hero.resize(screen_size)
 
-    (index, rewards) = load_level(index)
+    (index, rewards) = load_level(index, "./assets/stage_{}".format(level_index))
+
+    if index > 4:
+        level_index += 1
 
     inst_power = power_service.get_power()
 
