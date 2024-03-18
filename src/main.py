@@ -135,7 +135,7 @@ def load_level(index=0, path="./assets/demo/"):
                 "{}/reward.png".format(path)), (screen_size[0] // 10, screen_size[0] // 10 * 1.5)), (screen_size[0] - screen_size[0] // 10 * 1.1, 50))
         return (index, ["{}/reward.png".format(path)])
     except Exception as e:
-        return (0, [])
+        return (-1, ["{}/reward.png".format(path)])
 
 
 pygame.init()
@@ -199,7 +199,8 @@ while running:
 
     (index, rewards) = load_level(index, "./assets/stage_{}".format(level_index))
 
-    if index > 4:
+    if index < 0:
+        index = 0
         level_index += 1
 
     inst_power = power_service.get_power()
