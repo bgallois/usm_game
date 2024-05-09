@@ -228,6 +228,7 @@ while running:
     if index < 0:
         index = 0
         level_index += 1
+        continue
 
     inst_power = power_service.get_power()
 
@@ -240,7 +241,7 @@ while running:
     level_progress.update(hero_position / screen_size[0] * 0.25 + 0.25 * index)
 
     game_progress.draw(display)
-    game_progress.update((level_index + index)/(4*21))
+    game_progress.update(level_index/21)
 
     player_group.draw(display)
     player_group.update()
