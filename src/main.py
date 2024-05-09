@@ -113,6 +113,30 @@ class LevelProgress():
         self.y = screen_size[1] - self.h - 5
         self.w = screen_size[0] - 10
 
+class GameProgress():
+    def __init__(self, screen_size):
+        self.x = 5
+        self.h = screen_size[1] // 20
+        self.y = screen_size[1] - self.h - screen_size[1] // 20
+        self.w = screen_size[0] - 10
+        self.progress = 0
+
+    def draw(self, surface):
+        rect = pygame.Surface((self.w, self.h), pygame.SRCALPHA)
+        rect.fill((255, 255, 255, 128))
+        surface.blit(rect, (self.x, self.y))
+        rect_progress = pygame.Surface(
+            (self.w * self.progress, self.h), pygame.SRCALPHA)
+        rect_progress.fill((0, 0, 0, 128))
+        surface.blit(rect_progress, (self.x, self.y))
+
+    def update(self, progress):
+        self.progress = progress
+
+    def resize(self, screen_size):
+        self.h = screen_size[1] // 20
+        self.y = screen_size[1] - self.h - screen_size[1] // 20
+        self.w = screen_size[0] - 10
 
 def connect_power(index, element):
     power_service.stop()
@@ -160,6 +184,7 @@ load_level()
 
 power = PowerGauge(screen_size)
 level_progress = LevelProgress(screen_size)
+game_progress = GameProgress(screen_size)
 
 hero = Player(0, screen_size[1] - 160, screen_size, t="hero")
 player_group = pygame.sprite.Group()
@@ -192,6 +217,7 @@ while running:
                 i.rect.y = i.rect.y / screen_size[1] * event.dict['size'][1]
             screen_size = event.dict['size']
             level_progress.resize(screen_size)
+            game_progress.resize(screen_size)
             power.resize(screen_size)
             for i in peloton:
                 i.resize(screen_size)
@@ -212,6 +238,9 @@ while running:
     level_progress.draw(display)
     hero_position = hero.get_position()
     level_progress.update(hero_position / screen_size[0] * 0.25 + 0.25 * index)
+
+    game_progress.draw(display)
+    game_progress.update((level_index + index)/(4*21))
 
     player_group.draw(display)
     player_group.update()

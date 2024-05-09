@@ -78,7 +78,7 @@ class Bot():
         while True:
             if time.time() - TIME > 1.5:
                 TIME = time.time()
-                PREV = random.gauss(300, 100)
+                PREV = random.gauss(300, 50)
             power = max(0, PREV)
             if stop_flag:
                 power = 0
