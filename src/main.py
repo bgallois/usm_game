@@ -52,6 +52,52 @@ class Player(pygame.sprite.Sprite):
         self.image = self.cycle[0]
 
 
+class Cat(pygame.sprite.Sprite):
+    def __init__(self, x, y, screen_size):
+        super().__init__()
+        self.cycle = []
+        for i in range(9):
+            self.cycle.append(pygame.transform.scale(
+                pygame.image.load("./assets/cat/cat-{}.png".format(i)), (screen_size[0] // 12, screen_size[0] // 12)))
+        self.image = self.cycle[0]
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.count = random.randint(0, 9)
+        self.update_count = 0
+        self.speed = random.randint(1, 15)
+
+    def update(self):
+        self.count += 1
+        if self.count % self.speed == 0:
+            self.image = self.cycle[self.count % len(self.cycle)]
+        if self.count % 50 == 0:
+            x = random.randint(-25, 25)
+            self.rect.x += x
+            self.rect.y += random.randint(-25, 25)
+            if x > 0:
+                self.cycle = [
+                    pygame.transform.flip(
+                        i, True, False) for i in self.cycle]
+
+    def get_position(self):
+        return self.rect.x
+
+    def resize(self, screen_size):
+        self.cycle = []
+        for i in range(9):
+            try:
+                self.cycle.append(pygame.transform.scale(
+                    pygame.image.load("./assets/cat/cat-{}.png".format(i)), (screen_size[0] // 12, screen_size[0] // 12)))
+            except BaseException:
+                pass
+        self.image = self.cycle[0]
+        self.rect.x = random.randint(
+            int(screen_size[0] * 0.1), int(screen_size[0] * 0.9))
+        self.rect.y = random.randint(
+            int(screen_size[1] * 0.5), int(screen_size[1] * 0.8))
+
+
 class PowerGauge():
     def __init__(self, screen_size):
         self.x = screen_size[0] // 25
@@ -113,6 +159,7 @@ class LevelProgress():
         self.y = screen_size[1] - self.h - 5
         self.w = screen_size[0] - 10
 
+
 class GameProgress():
     def __init__(self, screen_size):
         self.x = 5
@@ -137,6 +184,7 @@ class GameProgress():
         self.h = screen_size[1] // 20
         self.y = screen_size[1] - self.h - screen_size[1] // 20
         self.w = screen_size[0] - 10
+
 
 def connect_power(index, element):
     power_service.stop()
@@ -186,6 +234,16 @@ power = PowerGauge(screen_size)
 level_progress = LevelProgress(screen_size)
 game_progress = GameProgress(screen_size)
 
+cat_group = pygame.sprite.Group()
+for i in range(8):
+    cat = Cat(random.randint(int(screen_size[0] *
+                                 0.1), int(screen_size[0] *
+              0.9)), random.randint(int(screen_size[1] *
+                                        0.5), int(screen_size[1] *
+                                                  0.8)), screen_size)
+    cat_group.add(cat)
+
+
 hero = Player(0, screen_size[1] - 160, screen_size, t="hero")
 player_group = pygame.sprite.Group()
 player_group.add(hero)
@@ -193,7 +251,7 @@ player_group.add(hero)
 peloton = pygame.sprite.Group()
 for i in reversed(range(10)):
     conc = Player(-random.randint(100, 300),
-                  screen_size[1] - 160 - 1.2*i, screen_size)
+                  screen_size[1] - 160 - 1.2 * i, screen_size)
     peloton.add(conc)
 
 running = True
@@ -219,6 +277,8 @@ while running:
             level_progress.resize(screen_size)
             game_progress.resize(screen_size)
             power.resize(screen_size)
+            for i in cat_group:
+                i.resize(screen_size)
             for i in peloton:
                 i.resize(screen_size)
             hero.resize(screen_size)
@@ -228,6 +288,12 @@ while running:
     if index < 0:
         index = 0
         level_index += 1
+
+        if level_index > 20:
+            display.blit(pygame.transform.scale(
+                pygame.image.load(
+                    "./assets/final/background_0.webp"), screen_size), (0, 0))
+            pygame.display.update()
         continue
 
     inst_power = power_service.get_power()
@@ -241,7 +307,10 @@ while running:
     level_progress.update(hero_position / screen_size[0] * 0.25 + 0.25 * index)
 
     game_progress.draw(display)
-    game_progress.update(level_index/21)
+    game_progress.update(level_index / 20)
+
+    cat_group.draw(display)
+    cat_group.update()
 
     player_group.draw(display)
     player_group.update()
@@ -264,8 +333,7 @@ while running:
     if index == 0 and hero_position / screen_size[0] < 0.15:
         display.blit(pygame.transform.scale(
             pygame.image.load(
-                rewards[0]), (screen_size[0] // 3, screen_size[0] // 3 * 1.5)), (screen_size[0]//4, 50))
-
+                rewards[0]), (screen_size[0] // 3, screen_size[0] // 3 * 1.5)), (screen_size[0] // 4, 50))
     # Menu
     if menu.is_enabled():
         menu.draw(display)  # Need to be before update
