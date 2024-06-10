@@ -5,6 +5,21 @@ import discover
 import power_service
 import asyncio
 import time
+import os
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+try:
+    from bleak.backends.winrt.util import allow_sta
+    allow_sta()
+except:
+    pass
 
 
 class Player(pygame.sprite.Sprite):
@@ -14,7 +29,7 @@ class Player(pygame.sprite.Sprite):
         for i in range(4):
             try:
                 self.cycle.append(pygame.transform.scale(
-                    pygame.image.load("./assets/demo/{}_{}.webp".format(t, i)), (screen_size[0] // 6, screen_size[0] // 6)))
+                    pygame.image.load(resource_path("./assets/demo/{}_{}.webp".format(t, i))), (screen_size[0] // 6, screen_size[0] // 6)))
             except BaseException:
                 pass
         self.image = self.cycle[0]
@@ -46,7 +61,7 @@ class Player(pygame.sprite.Sprite):
         for i in range(4):
             try:
                 self.cycle.append(pygame.transform.scale(
-                    pygame.image.load("./assets/demo/{}_{}.webp".format(self.t, i)), (screen_size[0] // 6, screen_size[0] // 6)))
+                    pygame.image.load(resource_path("./assets/demo/{}_{}.webp".format(self.t, i))), (screen_size[0] // 6, screen_size[0] // 6)))
             except BaseException:
                 pass
         self.image = self.cycle[0]
@@ -58,7 +73,7 @@ class Cat(pygame.sprite.Sprite):
         self.cycle = []
         for i in range(9):
             self.cycle.append(pygame.transform.scale(
-                pygame.image.load("./assets/cat/cat-{}.png".format(i)), (screen_size[0] // 12, screen_size[0] // 12)))
+                pygame.image.load(resource_path("./assets/cat/cat-{}.png".format(i))), (screen_size[0] // 12, screen_size[0] // 12)))
         self.image = self.cycle[0]
         self.rect = self.image.get_rect()
         self.rect.x = x
@@ -88,7 +103,7 @@ class Cat(pygame.sprite.Sprite):
         for i in range(9):
             try:
                 self.cycle.append(pygame.transform.scale(
-                    pygame.image.load("./assets/cat/cat-{}.png".format(i)), (screen_size[0] // 12, screen_size[0] // 12)))
+                    pygame.image.load(resource_path("./assets/cat/cat-{}.png".format(i))), (screen_size[0] // 12, screen_size[0] // 12)))
             except BaseException:
                 pass
         self.image = self.cycle[0]
@@ -108,7 +123,7 @@ class PowerGauge():
         self.max_hp = 800
         self.font = pygame.font.SysFont(None, 32)
         self.image = pygame.transform.scale(
-            pygame.image.load("./assets/demo/power.webp"), (screen_size[0] // 25, screen_size[0] // 25))
+            pygame.image.load(resource_path("./assets/demo/power.webp")), (screen_size[0] // 25, screen_size[0] // 25))
 
     def draw(self, surface):
         ratio = max(0, min(1, self.hp / self.max_hp))
@@ -131,7 +146,7 @@ class PowerGauge():
         self.h = screen_size[1] // 25
         self.font = pygame.font.SysFont(None, screen_size[0] // 40)
         self.image = pygame.transform.scale(
-            pygame.image.load("./assets/demo/power.webp"), (screen_size[0] // 25, screen_size[0] // 25))
+            pygame.image.load(resource_path("./assets/demo/power.webp")), (screen_size[0] // 25, screen_size[0] // 25))
 
 
 class LevelProgress():
@@ -197,14 +212,14 @@ def connect_power(index, element):
         power_service.main(element.address)
 
 
-def load_level(index=0, path="./assets/demo/"):
+def load_level(index=0, path=resource_path("./assets/demo/")):
     try:
         display.blit(pygame.transform.scale(
             pygame.image.load(
-                "{}/background_{}.webp".format(path, index)), screen_size), (0, 0))
+                resource_path("{}/background_{}.webp".format(path, index))), screen_size), (0, 0))
         display.blit(pygame.transform.scale(
             pygame.image.load(
-                "{}/reward.png".format(path)), (screen_size[0] // 10, screen_size[0] // 10 * 1.5)), (screen_size[0] - screen_size[0] // 10 * 1.1, 50))
+                resource_path("{}/reward.png".format(path))), (screen_size[0] // 10, screen_size[0] // 10 * 1.5)), (screen_size[0] - screen_size[0] // 10 * 1.1, 50))
         return (index, ["{}/reward.png".format(path)])
     except Exception as e:
         return (-1, ["{}/reward.png".format(path)])
@@ -225,7 +240,7 @@ menu = pygame_menu.Menu(
 devices = discover.get_devices()
 items = [("Bot", "-1"), ("None", "-1")]
 if devices:
-    items.extend([(i.name, i) for i in devices])
+    items.extend([(i.name, i) for i in devices if i.name])
 menu.add.dropselect("HT", items=items, onchange=connect_power)
 
 load_level()
@@ -283,7 +298,8 @@ while running:
                 i.resize(screen_size)
             hero.resize(screen_size)
 
-    (index, rewards) = load_level(index, "./assets/stage_{}".format(level_index))
+    (index, rewards) = load_level(index, resource_path(
+        "./assets/stage_{}".format(level_index)))
 
     if index < 0:
         index = 0
@@ -292,7 +308,7 @@ while running:
         if level_index > 20:
             display.blit(pygame.transform.scale(
                 pygame.image.load(
-                    "./assets/final/background_0.webp"), screen_size), (0, 0))
+                    resource_path("./assets/final/background_0.webp")), screen_size), (0, 0))
             pygame.display.update()
         continue
 

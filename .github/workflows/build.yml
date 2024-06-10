@@ -1,0 +1,87 @@
+name: pyinstaller
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  build_linux:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.11'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install pyinstaller
+        python -m pip install -r requirements.txt
+    - name: Build package
+      run: |
+        python -m PyInstaller src/main.py --noconsole --name="USMV" --onefile --add-data "assets/:./assets"
+    - name: Linux artefact
+      uses: actions/upload-artifact@v3
+      with:
+        name: linux
+        path: ./dist/
+
+  build_macos:
+    runs-on: macos-13
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Homebrew #https://github.com/Homebrew/homebrew-cask/issues/150323
+      id: set-up-homebrew
+      uses: Homebrew/actions/setup-homebrew@master
+    - name: Install dependencies
+      run: |
+        rm -f /usr/local/bin/2to3*
+        rm -f /usr/local/bin/idle3*
+        rm -f /usr/local/bin/pydoc3*
+        rm -f /usr/local/bin/python3*
+        rm -f /usr/local/opt/go/bin/go*
+        rm -f /usr/local/bin/go*
+        rm -rf /usr/local/lib/node*
+        brew update -q -f
+        brew upgrade -q -f
+      continue-on-error: true
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.11'
+    - name: Build package
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install pyinstaller
+        python -m pip install -r requirements.txt
+        python -m PyInstaller src/main.py --noconsole --name="USMV" --onedir --windowed --add-data "assets/:./assets"
+        hdiutil create -volname USMV -srcfolder dist/USMV.app -ov -format UDZO dist/USMV.dmg
+    - name: Mac artefact
+      uses: actions/upload-artifact@v3
+      with:
+        name: macos
+        path: ./dist/USMV.dmg
+
+  build_windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.11'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install pyinstaller
+        python -m pip install -r requirements.txt
+    - name: Build package
+      shell: bash
+      run: |
+        python -m PyInstaller src/main.py --noconsole --name="USMV" --onefile --windowed --add-data "assets/:./assets"
+    - name: Windows artefact
+      uses: actions/upload-artifact@v3
+      with:
+        name: windows
+        path: ./dist/
